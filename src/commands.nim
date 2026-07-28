@@ -42,7 +42,7 @@ var slotTotal: uint64
 proc handleForkCmds(client: AsyncSocket, req: ClientRequest, cmd: Command, id: string) {.async.} =
   let pid = sys_fork()
   if pid == -1:
-    respondWithError(client, "E:sys_fork-errno-" & $errno)
+    respondWithError(client, "E:SYS_FORK_FAILED-errno=" & $errno & "(" & $strerror(errno) & ")")
     return
   elif pid > 0:
     var status: cint
@@ -62,7 +62,7 @@ proc handleSlotCmds(client: AsyncSocket, req: ClientRequest, cmd: Command) {.asy
   inc slot
   if slot >= 16:
     dec slot
-    respondWithError(client, "E:SLOT_LIMIT_REACHED")
+    respondWithError(client, "E:SLOT_LIMIT_REACHED-current=" & $slot & "-max=16")
     return
   inc slotTotal
   await handleForkCmds(client, req, cmd, "mnt" & $slotTotal)
@@ -74,11 +74,11 @@ proc handleCmd*(client: AsyncSocket, req: ClientRequest) {.async.} =
     respondWithKeySet(client, getMaxKeySet())
     return
   elif req.RequestType == rtInvalid:
-    respondWithError(client, "E:INVALID_CMD")
+    respondWithError(client, "E:INVALID_CMD-type=" & $req.RequestType)
     return
   let handler = cmds[req.RequestType]
   if handler.fun.isNil:
-    respondWithError(client, "E:CMD_NOT_IMPLEMENTED")
+    respondWithError(client, "E:CMD_NOT_IMPLEMENTED-type=" & $req.RequestType)
   elif handler.useSlot:
     await handleSlotCmds(client, req, handler)
   elif handler.useFork:
