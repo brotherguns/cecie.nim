@@ -27,7 +27,7 @@ proc UploadFile*(cmd: ClientRequest, client: AsyncSocket, id: string) {.async.} 
   createDir(parentDir(target))
   let file = open(target.cstring, O_CREAT or O_TRUNC or O_WRONLY, 0o777)
   if file < 0:
-    respondWithError(client, "E:OPEN_FAILED-" & errno.toHex(8))
+    respondWithError(client, "E:OPEN_FAILED-PATH=" & target & "-errno=" & $errno & "(" & $strerror(errno) & ")")
     return
   else:
     respondWithOk(client)

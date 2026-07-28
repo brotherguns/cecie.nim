@@ -37,11 +37,13 @@ template respondWithJson*(client,jsonNode: untyped) =
 
 proc reportSaveError*(saveStatus: int, client:AsyncSocket) {.async.} =
   if saveStatus == -1:
-    respondWithError(client, "E:SAVE_IMAGE_INVALID")
+    respondWithError(client, "E:SAVE_IMAGE_INVALID-status=" & $saveStatus)
   elif saveStatus == -2 or saveStatus == -3:
-    respondWithError(client, "E:SAVE_IMAGE_SIZE_INVALID")
+    respondWithError(client, "E:SAVE_IMAGE_SIZE_INVALID-status=" & $saveStatus)
   elif saveStatus == -4:
-    respondWithError(client, "E:SAVE_KEY_INVALID")
+    respondWithError(client, "E:SAVE_KEY_INVALID-status=" & $saveStatus)
   elif saveStatus == -5:
-    respondWithError(client, "E:SAVE_KEY_SIZE_INVALID")
+    respondWithError(client, "E:SAVE_KEY_SIZE_INVALID-status=" & $saveStatus)
+  else:
+    respondWithError(client, "E:SAVE_UNKNOWN_ERROR-status=" & $saveStatus)
 

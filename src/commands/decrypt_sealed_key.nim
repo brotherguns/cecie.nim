@@ -10,7 +10,7 @@ import "./utils"
 
 proc DecryptSealedKey*(cmd: ClientRequest, client: AsyncSocket, id: string) {.async.} =
     if cmd.decsdkey.sealedKey.len != 96:
-        respondWithError(client, "E:SEALEDKEY_INVALID_LEN")
+        respondWithError(client, "E:SEALEDKEY_INVALID_LEN-GOT=" & $cmd.decsdkey.sealedKey.len & "-EXPECTED=96")
         return
 
     setupCredentials()
@@ -23,7 +23,7 @@ proc DecryptSealedKey*(cmd: ClientRequest, client: AsyncSocket, id: string) {.as
     
     var decStatus = decryptSealedKey(encryptedSealedKey, decryptedSealedKey)
     if decStatus == -1:
-        respondWithError(client, "E:SEALEDKEY_DEC_FAIL")
+        respondWithError(client, "E:SEALEDKEY_DEC_FAIL-status=" & $decStatus)
         return
     
     respondWithJson(client, decryptedSealedKey)

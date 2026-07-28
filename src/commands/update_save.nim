@@ -16,7 +16,7 @@ proc UpdateSave*(cmd: ClientRequest, client: AsyncSocket, mountId: string) {.asy
 
   var s: Stat
   if stat(update.sourceFolder.cstring, s) != 0 or not s.st_mode.S_ISDIR:
-    respondWithError(client, "E:SOURCE_FOLDER_INVALID")
+    respondWithError(client, "E:SOURCE_FOLDER_INVALID-PATH=" & update.sourceFolder & "-errno=" & $errno & "(" & $strerror(errno) & ")")
     return 
   let (saveDir, saveName) = getSavePathComponents(update.saveName, SAVE_DIRECTORY)
   let saveStatus = checkSave(saveDir, saveName)
@@ -51,12 +51,12 @@ proc UpdateSave*(cmd: ClientRequest, client: AsyncSocket, mountId: string) {.asy
         let sourcePath = joinPath(update.sourceFolder, relativePath)
         try:
           copyFile(sourcePath, targetPath)
-        except IOError:
-          respondWithError(client, "E:COPY_FAILED")
+        except IOError as e:
+          respondWithError(client, "E:COPY_FAILED-SRC=" & sourcePath & "-DST=" & targetPath & "-" & e.msg)
           failed = true
           break
-        except OSError:
-          respondWithError(client, "E:COPY_FAILED")
+        except OSError as e:
+          respondWithError(client, "E:COPY_FAILED-SRC=" & sourcePath & "-DST=" & targetPath & "-" & e.msg)
           failed = true
           break
 

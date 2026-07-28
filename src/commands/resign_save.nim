@@ -39,11 +39,11 @@ proc ResignSave*(cmd: ClientRequest, client: AsyncSocket, mountId: string) {.asy
     let writeResult = sys_pwrite(sfoFd, resign.accountId.addr, int(8), Off(0x15C))
     failed = writeResult != 8
     if writeResult < 0:
-      respondWithError(client, "E:PWRITE_FAILED-" & errno.toHex(8))
+      respondWithError(client, "E:PWRITE_FAILED-PATH=" & sfoPath & "-errno=" & $errno & "(" & $strerror(errno) & ")")
     elif writeResult < 8:
-      respondWithError(client, "E:PWRITE_INCOMPLETE_WRITE")
+      respondWithError(client, "E:PWRITE_INCOMPLETE_WRITE-PATH=" & sfoPath & "-wrote=" & $writeResult & "-expected=8")
     elif failed:
-      respondWithError(client, "E:UNKNOWN_ISSUE-" & writeResult.toHex(16))
+      respondWithError(client, "E:UNKNOWN_ISSUE-PATH=" & sfoPath & "-writeResult=" & $writeResult)
     discard close(sfoFd)
     discard umountSave(mntFolder, handle, false)
   discard rmdir(mntFolder.cstring)

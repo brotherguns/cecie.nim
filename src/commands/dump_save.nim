@@ -17,7 +17,7 @@ proc DumpSave*(cmd: ClientRequest, client: AsyncSocket, mountId: string) {.async
 
   var s: Stat
   if stat(dump.targetFolder.cstring, s) != 0 or not s.st_mode.S_ISDIR:
-    respondWithError(client, "E:TARGET_FOLDER_INVALID")
+    respondWithError(client, "E:TARGET_FOLDER_INVALID-PATH=" & dump.targetFolder & "-errno=" & $errno & "(" & $strerror(errno) & ")")
     return
   let (saveDir, saveName) = getSavePathComponents(dump.saveName, SAVE_DIRECTORY)
 
@@ -49,12 +49,12 @@ proc DumpSave*(cmd: ClientRequest, client: AsyncSocket, mountId: string) {.async
         let sourceFile = joinPath(mntFolder, relativePath)
         try:
           copyFile(sourceFile, targetFile)
-        except IOError:
-          respondWithError(client, "E:COPY_FAILED")
+        except IOError as e:
+          respondWithError(client, "E:COPY_FAILED-SRC=" & sourceFile & "-DST=" & targetFile & "-" & e.msg)
           failed = true
           break
-        except OSError:
-          respondWithError(client, "E:COPY_FAILED")
+        except OSError as e:
+          respondWithError(client, "E:COPY_FAILED-SRC=" & sourceFile & "-DST=" & targetFile & "-" & e.msg)
           failed = true
           break
     discard umountSave(mntFolder, handle, false)

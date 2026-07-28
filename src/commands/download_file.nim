@@ -36,12 +36,12 @@ proc DownloadFile*(cmd: ClientRequest, client: AsyncSocket, id: string) {.async.
 
   var s : Stat
   if stat(source.cstring, s) < 0:
-    respondWithError(client, "E:STAT_FAILED-" & errno.toHex(8))
+    respondWithError(client, "E:STAT_FAILED-PATH=" & source & "-errno=" & $errno & "(" & $strerror(errno) & ")")
     return
 
   let file = open(source.cstring, O_RDONLY, 0o777)
   if file < 0:
-    respondWithError(client, "E:OPEN_FAILED-" & errno.toHex(8))
+    respondWithError(client, "E:OPEN_FAILED-PATH=" & source & "-errno=" & $errno & "(" & $strerror(errno) & ")")
     return
   var total = s.st_size
   var resp: SizeResponse

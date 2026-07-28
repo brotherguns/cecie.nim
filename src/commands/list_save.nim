@@ -44,8 +44,9 @@ proc ListSaveFiles*(cmd: ClientRequest, client: AsyncSocket, mountId: string) {.
   else:
     for (kind, relativePath) in getRequiredFiles(mntFolder, @[]):
       var s : Stat
-      if stat((mntFolder / relativePath).cstring, s) == -1:
-        respondWithError(client, "E:STAT_FAILED-" & errno.toHex(8))
+      let fullPath = mntFolder / relativePath
+      if stat(fullPath.cstring, s) == -1:
+        respondWithError(client, "E:STAT_FAILED-PATH=" & fullPath & "-errno=" & $errno & "(" & $strerror(errno) & ")")
         failed = true
         break
       listEntries.add SaveListEntry(kind: kind, path: relativePath, size: s.st_size, mode: s.st_mode, uid: s.st_uid, gid: s.st_gid)
